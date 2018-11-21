@@ -24,6 +24,9 @@ vk_category = open('db\\vk_category.db','r').readlines()
 vk_category_list = [(x.split('\t')[0],x.split('\t')[1].replace('\n','')) for x in vk_category]
 vk_category_d = dict(vk_category_list)
 
+vkitemAlbum = open('db\\vkitemAlbum.db','r').readlines()
+vkitemAlbum_list = [str(x.split(' ')[0]) for x in vkitemAlbum]
+print(vkitemAlbum_list)
 def getCatName(catId):
     for i in category:
         if catId in i['@id']:
@@ -31,8 +34,11 @@ def getCatName(catId):
     return None
 
 def getCatFromList(catName):
-    if catName in const.list:
-        return const.list[catName]
+    if catName in list(const.list.keys()):
+        res = const.list[catName]
+        if res == '':
+            return None
+        return res
     else:
         return None
 
@@ -46,18 +52,21 @@ def addToAlbum(item_id, album_id):
         album_ids = album_id
     )
 fileError = open('txt\\fileError.log','a');
-
-for i in offer[1:]:
+vkitemAlbum = open('db\\vkitemAlbum.db','a')
+for i in offer:
     if i['@id'] in site_vk_d:
         vkid = site_vk_d[i['@id']]
-        catid = i['categoryId']
-        сatNameS = getCatName(catid)
-        сatName = getCatFromList(сatNameS)
-        if not сatName is None:
-            catVkId = vk_category_d[сatName]
-            addToAlbum(vkid,catVkId)
-            print(vkid,catid,catVkId)
-        else:
-            fileError.write(i['@id'] + ' не найдена категория в справочнике ' + catid +' '+сatNameS + '\n')
+        if  vkid not in vkitemAlbum_list:
+            print(vkid)
+            catid = i['categoryId']
+            сatNameS = getCatName(catid)
+            #print('сatNameS',сatNameS)
+            сatName = getCatFromList(сatNameS)
+            if not сatName is None:
+                catVkId = vk_category_d[сatName]
+                addToAlbum(vkid,catVkId)
+                vkitemAlbum.write(str(vkid) + ' ' + str(catid) + ' ' + str(catVkId) +'\n')
+            else:
+                fileError.write(str(i['@id']) + ' не найдена категория в справочнике ' + str(catid) +' '+str(сatNameS) + '\n')
     else:
-        fileError.write(i['@id'] + ' не найдено в вк\n')
+        fileError.write(str(i['@id']) + ' не найдено в вк\n')

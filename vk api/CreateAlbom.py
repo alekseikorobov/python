@@ -19,8 +19,9 @@ def createAlbom(name):
 
 vk_category = open('db\\vk_category.db','a+')
 for i in l:
-    catVkId = createAlbom(i)
-    print(catVkId)
-    vk_category.write(i + '\t' + str(catVkId) + '\n')
+    if i != '':
+        catVkId = createAlbom(i)
+        print(catVkId)
+        vk_category.write(i + '\t' + str(catVkId) + '\n')
 
 print('ok')
