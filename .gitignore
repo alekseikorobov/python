@@ -3,3 +3,6 @@ __pycache__
 config.py
 vk_config.v2.json
 index.xml
+parsers/aviasales/data
+parsers/aviasales/country_price_by_month.csv
+parsers/aviasales/types.json
