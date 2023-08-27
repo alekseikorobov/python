@@ -9,10 +9,11 @@ categories = {
     'Videos':'.wmv,.webm,.mp4',
     'Backup':'.sgbp',
     'Link':'.lnk',    
-    'Zip':'.zip,.rar,.gz,.tgz',
+    'Torrent':'.torrent',
+    'Zip':'.zip,.rar,.gz,.tgz,.tar.xz',
     'Proform':'.xsn',
     'Image':'.PNG,.png,.jpg,.JPG,.svg,.jpeg,.HEIC,.heic,.ico,.bmp',
-    'Bin':'.exe,.dll,.msi,.msu,.whl,.config',
+    'Bin':'.exe,.dll,.msi,.msu,.whl,.config,.bin',
     'Scripts':'.ipynb,.bat,.markdown,.ps1,.xml,.json,.sql,.cs,.py,.wsdl,.xsd,.dtsx,.pbix,.rdl,.vsix,.nupkg,.pac,.js,.ts,.graphql,.h',
     'Messages':'.msg,.eml',
     'Tracks':'.gpx,.kml,.geojson',
@@ -21,10 +22,11 @@ categories = {
 }
 
 base_dirs = [
-    r'c:\Users\akorobov\Desktop\temp',
-    r'c:\Users\akorobov\Documents',
-    r'c:\Users\akorobov\Downloads',
-    r'c:\Users\akorobov\Desktop',
+    '/home/aleksei/Download',
+    #'/home/aleksei/Загрузки/Other/'
+    #r'c:\Users\akorobov\Documents',
+    #r'c:\Users\akorobov\Downloads',
+    #r'c:\Users\akorobov\Desktop',
     #r'c:\Users\akorobov\Documents\Other'
 ]
 
