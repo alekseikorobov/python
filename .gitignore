@@ -3,6 +3,16 @@ __pycache__
 config.py
 vk_config.v2.json
 index.xml
-parsers/aviasales/data
+data
 parsers/aviasales/country_price_by_month.csv
 parsers/aviasales/types.json
+
+*.pyc
+database.feather
+yandex_context/train_algoritme/part1/video/Тренировки по алгоритмам от Яндекса.  Лекция 2_ «Линейный поиск».mp4
+yandex_context/train_algoritme/part1/video/Тренировки по алгоритмам от Яндекса.  Лекция 3_ «Множества».mp4
+yandex_context/train_algoritme/part1/video/Тренировки по алгоритмам от Яндекса.  Лекция 4_ «Словари и сортировка подсчётом».mp4
+yandex_context/train_algoritme/part1/video/Тренировки по алгоритмам от Яндекса.  Разбор домашнего задания по лекции 1 и 2.mp4
+yandex_context/train_algoritme/part1/video/Тренировки по алгоритмам от Яндекса.  Разбор домашнего задания по лекции 3 и 4.mp4
+.vscode
+files/moving_file/paths.py
