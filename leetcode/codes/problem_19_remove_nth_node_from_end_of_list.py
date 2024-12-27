@@ -10,7 +10,7 @@ class ListNode:
 
 class Solution:
 
-    def build_nodes(self, list:List) -> ListNode:        
+    def build_nodes(self, list:List) -> ListNode:
         node = ListNode(list[0], None)
         last = node
         for i in range(1,len(list)):

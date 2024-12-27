@@ -1,7 +1,7 @@
 #import inc_dec    # The code to test
 import unittest  # The test framework
 
-from codes.problem_16_3sum_closest import Solution
+from codes.problem_16_3sum_closest_2 import Solution
 
 
 class Test_TestIncrementDecrement(unittest.TestCase):
