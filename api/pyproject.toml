@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "api"
+version = "0.1.0"
+description = ""
+authors = ["aleksei korobov <aleksei_korobov@mail.ru>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+python-xlib = "^0.33"
+ewmh = "^0.1.6"
+pynput = "^1.7.7"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

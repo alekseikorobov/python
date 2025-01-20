@@ -10,6 +10,17 @@ python = "^3.10"
 tqdm = "^4.66.5"
 wave = "^0.0.2"
 #torch==2.3.1
+whisper = "^1.1.10"
+vosk = "^0.3.45"
+sounddevice = "^0.5.1"
+numpy = "^2.2.1"
+pyautogui = "^0.9.54"
+keyboard = "^0.13.5"
+speechrecognition = "^3.14.0"
+pynput = "^1.7.7"
+pyttsx3 = "^2.98"
+torchaudio = "^2.5.1"
+omegaconf = "^2.3.0"
 
 [tool.poetry.group.dev.dependencies]
 ipykernel = "^6.29.5"

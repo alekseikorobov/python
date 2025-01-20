@@ -10,16 +10,13 @@ class ListNode:
 
 class Solution:
     def mergeKLists(self, lists: List[Optional[ListNode]]) -> Optional[ListNode]:
-        #создаем произвольное число указателей        
+        #создаем произвольное число указателей
         curs = [n for n in lists if n is not None]        
         dymmyNode = ListNode()
         curr = dymmyNode
         
         while len(curs) > 0:
-            vals = [
-                n.val if n is not None else float('inf')
-                for n in curs
-            ]                        
+            vals = [n.val for n in curs]
             min_index = 0
             for i in range(1, len(vals)):
                 if vals[i] < vals[min_index]:
