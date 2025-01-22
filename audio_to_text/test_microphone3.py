@@ -5,10 +5,9 @@ import sounddevice as sd
 from vosk import Model, KaldiRecognizer
 import time
 from pynput import keyboard  # Для отслеживания клавиш
-
+import re
 
 # Путь к модели
-MODEL_PATH = "vosk-model-small-ru-0.22"  # Укажите путь к распакованной модели
 MODEL_PATH = 'data/vosk-model-ru-0.42'  # Укажите путь к распакованной модели
 MODEL_PATH = 'data/vosk-model-small-ru-0.22'  # Укажите путь к распакованной модели
 
@@ -48,22 +47,53 @@ my_queue_words = queue.Queue()
 my_queue_words_l = []
 
 def recognize_command(text_command):
-    global is_key_pressed
-    if text_command == 'открыть гугл':
+    global is_key_pressed    
+    if re.match('(открой|открыть|запустить|запусти|запускай) (гугл)',text_command):
         play_text_sound('открываю')
         os.system('google-chrome google.ru')
-    if text_command == 'открыть дион':
+        return True
+    
+    if re.match('(открой|открыть|запустить|запусти|запускай) (почту|ящик)',text_command):
+        play_text_sound('открываю')
+        os.system('google-chrome e.mail.ru')
+        return True
+    
+    if re.match('(открой|открыть|запустить|запусти|запускай) (дион)',text_command):
         play_text_sound('открываю')
         os.system('google-chrome https://dion.vc/')
-    if text_command in ['открыть телеграм','открыть телеграмм', 'открыть телегу','телега']:
+        return True
+    
+    if re.match('((открой|открыть|запустить|запусти|запускай) |)(телегу|телега|телеграмм|телеграм)', text_command):
         play_text_sound('открываю')
-        os.system('telegram-desktop')
-    if text_command == 'открыть питон':
+        os.system('telegram-desktop &')
+        return True
+        
+    if re.match('(открой|открыть|запустить|запусти|запускай) (заметки|заметку)',text_command):
+        play_text_sound('вот тебе заметки')
+        os.system('open "obsidian://open?vault=work&file=Weekly%2F2025%2FWeek%2004"')
+        return True
+    
+    if re.match('(открой|открыть|запустить|запусти|запускай) (питон|пайтон)',text_command):
         play_text_sound('вот тебе питон')
         os.system('konsole -e python &')
+        return True
+    
+    if re.match('(открой|открыть|запустить|запусти|запускай) (консоль|терминал)',text_command):
+        play_text_sound('открываю')
+        os.system('konsole &')
+        return True
+    
+    
     if text_command == 'слушай меня':
         play_text_sound('говори текст я ввиду')
         is_key_pressed = True
+        return True
+    
+    
+    if text_command == 'ты тут':
+        play_text_sound('да говори')
+        return True
+    return False
 
 def recognize_and_type():
     """Распознавание речи и отправка текста в активное окно."""
@@ -108,7 +138,9 @@ def recognize_and_type():
                 # Удаляем повторяющиеся слова
                 filtered_text = remove_repeated_words(partial_text_new)
                 filtered_text = filtered_text.strip()
-                
+                if filtered_text == '':
+                    continue
+                print(f"Промежуточный текст: {filtered_text}")
                 is_command = recognize_command(filtered_text)
                 if is_command:
                     continue
@@ -119,7 +151,7 @@ def recognize_and_type():
 
                     # Добавляем временной фильтр: выводим текст не чаще 0.5 секунд
                     if current_time - last_update_time > 0.5 and len(filtered_text) > 0:
-                        print(f"Промежуточный текст: {filtered_text}")
+                        
                         if is_key_pressed:
                             os.system(f'xdotool type --delay 10 "{filtered_text} "')
                             last_partial_text = filtered_text
