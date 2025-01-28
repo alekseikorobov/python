@@ -6,11 +6,26 @@ from vosk import Model, KaldiRecognizer
 import time
 from pynput import keyboard  # Для отслеживания клавиш
 import re
+import subprocess
+from threading import Thread
 
+from test_llm_model import qa_dialog
+def run_process(cmd:str):
+    try:
+        #print('run thread')
+        #os.spawnl(os.det, 'some_long_running_command')
+        #Thread(target=lambda: subprocess.Popen(cmd + ' &', shell=True),daemon=True).run()
+        subprocess.Popen('nohup '+ cmd + ' &', shell=True )
+    except Exception as ex:
+        print(ex)
 # Путь к модели
 MODEL_PATH = 'data/vosk-model-ru-0.42'  # Укажите путь к распакованной модели
 MODEL_PATH = 'data/vosk-model-small-ru-0.22'  # Укажите путь к распакованной модели
 
+# if __name__ == "__main__":
+#     #os.spawnl(os.P_DETACH, 'some_long_running_command')
+#     run_process('konsole')
+#     exit(1)
 # Проверка наличия модели
 if not os.path.exists(MODEL_PATH):
     print(f"Модель по пути {MODEL_PATH} не найдена. Скачайте её с https://alphacephei.com/vosk/models")
@@ -45,55 +60,103 @@ def remove_repeated_words(text):
 
 my_queue_words = queue.Queue()
 my_queue_words_l = []
+is_dialog_with_llm = False
+is_command = False
+
 
 def recognize_command(text_command):
-    global is_key_pressed    
+    global is_key_pressed,is_dialog_with_llm,is_command
+    is_command = False
     if re.match('(открой|открыть|запустить|запусти|запускай) (гугл)',text_command):
+        is_command = True
         play_text_sound('открываю')
-        os.system('google-chrome google.ru')
-        return True
+        #os.system('google-chrome google.ru')
+        run_process('google-chrome google.ru')
+    m = re.match('за( |)гугл(е|и|я) (.*)',text_command)
+    if m:
+        is_command = True
+        gs = m.groups()
+        if len(gs)>2:
+            text = gs[2]
+            text = text.strip()
+            if len(text)>3:
+                play_text_sound('открываю')
+                text = text.replace(' ','+')
+                #os.system('google-chrome google.ru')
+                run_process(f'google-chrome https://www.google.com/search?q={text}')
+                
+    if re.match('((режим|открой|открыть|запустить|запусти|запускай) |)(диалог|диалога)',text_command):
+        is_command = True
+        play_text_sound('режим диалога')
+        is_dialog_with_llm = True
+        is_key_pressed = False
     
-    if re.match('(открой|открыть|запустить|запусти|запускай) (почту|ящик)',text_command):
-        play_text_sound('открываю')
-        os.system('google-chrome e.mail.ru')
-        return True
+    if re.match('((сделай|сделать) |)(скрин|скриншот)',text_command):
+        is_command = True
+        play_text_sound('режим скрина')
+        run_process('spectacle -r')
     
-    if re.match('(открой|открыть|запустить|запусти|запускай) (дион)',text_command):
+    if re.match('(включи|включить) запись',text_command):
+        is_command = True
+        play_text_sound('запись началась')
+        run_process('obs --startrecording')
+        
+    if re.match('(закрыть|выйти из|) (диалог|диалога)',text_command):
+        is_command = True
+        play_text_sound('вышли из диалога')
+        is_dialog_with_llm = False
+        
+    
+    if re.match('(открой|открыть|запустить|запусти|запускай) (почта|почту|ящик)',text_command):
+        is_command = True
         play_text_sound('открываю')
-        os.system('google-chrome https://dion.vc/')
-        return True
+        run_process('google-chrome e.mail.ru')
+        
+    
+    if re.match('((открой|открыть|запустить|запусти|запускай) |)(дион)',text_command):
+        is_command = True
+        play_text_sound('открываю')
+        run_process('google-chrome https://dion.vc/')
+        
     
     if re.match('((открой|открыть|запустить|запусти|запускай) |)(телегу|телега|телеграмм|телеграм)', text_command):
+        is_command = True
         play_text_sound('открываю')
-        os.system('telegram-desktop &')
-        return True
+        run_process('telegram-desktop')
+        
         
     if re.match('(открой|открыть|запустить|запусти|запускай) (заметки|заметку)',text_command):
+        is_command = True
         play_text_sound('вот тебе заметки')
-        os.system('open "obsidian://open?vault=work&file=Weekly%2F2025%2FWeek%2004"')
-        return True
+        run_process('open "obsidian://open?vault=work&file=Weekly%2F2025%2FWeek%2004"')
+        
     
     if re.match('(открой|открыть|запустить|запусти|запускай) (питон|пайтон)',text_command):
+        is_command = True
         play_text_sound('вот тебе питон')
-        os.system('konsole -e python &')
-        return True
+        run_process('konsole -e python')
+        
     
     if re.match('(открой|открыть|запустить|запусти|запускай) (консоль|терминал)',text_command):
+        is_command = True
         play_text_sound('открываю')
-        os.system('konsole &')
-        return True
+        #run_process('konsole')
+        run_process('konsole')
+        
     
     
     if text_command == 'слушай меня':
+        is_command = True
         play_text_sound('говори текст я ввиду')
         is_key_pressed = True
-        return True
+        
     
     
     if text_command == 'ты тут':
+        is_command = True
         play_text_sound('да говори')
-        return True
-    return False
+        
+    
 
 def recognize_and_type():
     """Распознавание речи и отправка текста в активное окно."""
@@ -104,12 +167,27 @@ def recognize_and_type():
     with sd.RawInputStream(samplerate=16000, blocksize=16000, dtype="int16",
                            channels=1, callback=audio_callback):
         print("Говорите что-нибудь...")
+        
         while True:
             data = audio_queue.get()
             if recognizer.AcceptWaveform(data):
                 # Распознаем текст
                 result = recognizer.Result()
                 text = eval(result)["text"]  # Получаем распознанный текст
+                if len(text)>0:
+                    print(f'{text=}')
+                
+                if not is_command:
+                    recognize_command(text)
+                    if is_command:
+                        continue
+                    
+                if is_dialog_with_llm:
+                    if len(text)>0:
+                        answe = qa_dialog(text)
+                        play_text_sound(answe)
+                        continue
+                
                 #print(f"Распознанный текст: {text}")
                 
                 #my_queue_words = queue.Queue()
@@ -141,7 +219,8 @@ def recognize_and_type():
                 if filtered_text == '':
                     continue
                 print(f"Промежуточный текст: {filtered_text}")
-                is_command = recognize_command(filtered_text)
+                
+                recognize_command(filtered_text)
                 if is_command:
                     continue
                                 
