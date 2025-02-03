@@ -10,6 +10,8 @@ import subprocess
 from threading import Thread
 import logging
 from datetime import datetime
+from MicSpeech import MicSpeech
+from whisper.normalizers.basic import BasicTextNormalizer
 
 log_folder = 'log' #папка с логами
 
@@ -89,15 +91,17 @@ my_queue_words = queue.Queue()
 my_queue_words_l = []
 is_dialog_with_llm = False
 is_command = False
-
+text_normalizer = BasicTextNormalizer()
 
 def recognize_command(text_command):
     '''
     распознавания команд из текста 
     '''
     global is_key_pressed,is_dialog_with_llm,is_command
+    text_command = text_normalizer(text_command).strip()
+    #print(f'{text_command=}')
     is_command = False
-    if re.match('(открой|открыть|запустить|запусти|запускай) (гугл)',text_command):
+    if re.match('(открой|открыть|запустить|запусти|запускай) (гугл|google)',text_command):
         is_command = True
         play_text_sound('открываю')
         #os.system('google-chrome google.ru')
@@ -126,7 +130,7 @@ def recognize_command(text_command):
         play_text_sound('режим скрина')
         run_process('spectacle -r')
     
-    if re.match('(включи|включить) запись',text_command):
+    if re.match('(включи|включить|начать|сделай|сделать) запись',text_command):
         is_command = True
         play_text_sound('запись началась')
         run_process('obs --startrecording')
@@ -158,13 +162,21 @@ def recognize_command(text_command):
     if re.match('(открой|открыть|запустить|запусти|запускай) (заметки|заметку)',text_command):
         is_command = True
         play_text_sound('вот тебе заметки')
-        run_process('open "obsidian://open?vault=work&file=Weekly%2F2025%2FWeek%2004"')
+        wn = datetime.now().date().isocalendar().week
+        year = datetime.now().date().year
+        
+        run_process(f'open "obsidian://open?vault=work&file=Weekly%2F{year}%2FWeek%20{wn:02d}"')
         
     
-    if re.match('(открой|открыть|запустить|запусти|запускай) (питон|пайтон)',text_command):
+    if re.match('(открой|открыть|запустить|запусти|запускай) (питон|пайтон|python)',text_command):
         is_command = True
         play_text_sound('вот тебе питон')
-        run_process('konsole -e python')
+        run_process('konsole -e ipython')
+    
+    if re.match('(открой|открыть|запустить|запусти|запускай) (блокнот|sublime)',text_command):
+        is_command = True
+        play_text_sound('вот тебе блокнот')
+        run_process('subl')
         
     
     if re.match('(открой|открыть|запустить|запусти|запускай) (консоль|терминал)',text_command):
@@ -190,9 +202,28 @@ def input_text_to_current_window(filtered_text:str):
     '''
     ввод текста в активное окна 
     '''
-    os.system(f'xdotool type --delay 10 "{filtered_text} "')    
+    space_last = ' '
+    filtered_text = filtered_text.strip(' ')
+    os.system(f'xdotool type --delay 10 "{filtered_text}{space_last}"')    
     
 from fix_text import fix_text
+def recognize_and_type_new():
+    ms = MicSpeech(model_name='openai/whisper-large-v3-turbo',#small/large/turbo
+                   device='cuda')    
+    ms.start_listening(callback_text)
+    
+def callback_text(text):
+    #global last_partial_text, last_update_time, my_queue_words
+    
+    logging.info(f'{text=}')
+    
+    recognize_command(text)
+    if is_command:
+        return
+    
+    if is_key_pressed:
+        input_text_to_current_window(text)
+
 def recognize_and_type():
     """Распознавание речи
        используется для распознавания команд
@@ -343,6 +374,6 @@ if __name__ == "__main__":
         listener = keyboard.Listener(on_release=on_release)
         listener.start()
         
-        recognize_and_type()
+        recognize_and_type_new()
     except KeyboardInterrupt:
         logging.info("\nПрограмма остановлена.")
