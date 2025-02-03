@@ -9,10 +9,23 @@ parsers/aviasales/types.json
 
 *.pyc
 database.feather
-yandex_context/train_algoritme/part1/video/Тренировки по алгоритмам от Яндекса.  Лекция 2_ «Линейный поиск».mp4
-yandex_context/train_algoritme/part1/video/Тренировки по алгоритмам от Яндекса.  Лекция 3_ «Множества».mp4
-yandex_context/train_algoritme/part1/video/Тренировки по алгоритмам от Яндекса.  Лекция 4_ «Словари и сортировка подсчётом».mp4
-yandex_context/train_algoritme/part1/video/Тренировки по алгоритмам от Яндекса.  Разбор домашнего задания по лекции 1 и 2.mp4
-yandex_context/train_algoritme/part1/video/Тренировки по алгоритмам от Яндекса.  Разбор домашнего задания по лекции 3 и 4.mp4
+*.mp4
 .vscode
 files/moving_file/paths.py
+poetry.lock
+.env
+log
+audio_to_text/latest_silero_models.yml
+audio_to_text/nohup.out
+files/check/files.txt
+files/check/валидация.txt
+files/moving_file/log.txt
+files/result_rename copy.txt
+files/result_rename_2.txt
+files/result_rename_new.txt
+files/result_rename.txt
+parsers/habr/data.zip
+ml/face_detection/Kornia-YuNet/res.txt
+ml/face_embedding/all_208.txt
+ml/face_embedding/data_1.feather
+ml/face_embedding/res.txt

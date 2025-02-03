@@ -4,6 +4,11 @@ import wave
 import sys
 import os
 import whisper
+#pip uninstall whisper
+#pip install git+https://github.com/openai/whisper.git
+#pip install --upgrade --no-deps --force-reinstall git+https://github.com/openai/whisper.git
+from dotenv import load_dotenv
+load_dotenv()
 
 def recognize_file(model, path):
   print(f'rec from {path=}')
@@ -22,15 +27,15 @@ if __name__ == '__main__':
   print('model loaded')
 
   start = time.time()
-  base_path_v = r'/home/aleksei/video/'
-  base_path_t = r'/home/aleksei/video/text'
+  base_path_v = os.getenv('BASE_PATH_VIDEO')
+  base_path_t = os.getenv('BASE_PATH_RESULT_TEXT')
   if not os.path.isdir(base_path_t):
     os.mkdir(base_path_t)
   for file_name in tqdm(os.listdir(base_path_v),colour='green'):    
     if not '.mkv' in file_name:
       continue
-    if file_name != '2024-09-03_17-02-22.mkv':
-      continue
+    # if file_name != '2024-09-03_17-02-22.mkv':
+    #   continue
       
     path_v = os.path.join(base_path_v, file_name)
     
