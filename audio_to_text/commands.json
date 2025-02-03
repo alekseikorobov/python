@@ -1,0 +1,64 @@
+{
+    "commands":[
+        {
+            "pattern_rx":"(открой|открою|открыть|запустить|запусти|запускай) (гугл|google)",
+            "response_speeks":["открываю"],
+            "cmd":"google-chrome google.ru"
+        },
+        {
+            "pattern_rx":"(открой|открыть|запустить|запусти|запускай) (календарь)",
+            "response_speeks":["открываю"],
+            "cmd":"google-chrome https://www.icloud.com/calendar/"
+        },
+        {
+            "pattern_rx":"(открой|открыть|запустить|запусти|запускай) (таблицу|таблицы)",
+            "response_speeks":["открываю"],
+            "cmd":"google-chrome https://docs.google.com/spreadsheets/u/0/"
+        },
+        {
+            "pattern_rx":"((сделай|сделать) |)(скрин|скриншот)",
+            "response_speeks":["открываю"],
+            "cmd":"spectacle -r"
+        },
+        {
+            "pattern_rx":"(включи|включить|начать|сделай|сделать) запись",
+            "response_speeks":["запись началась"],
+            "cmd":"obs --startrecording"
+        },
+        {
+            "pattern_rx":"(открой|открыть|запустить|запусти|запускай) (почта|почту|ящик)",
+            "response_speeks":["открываю"],
+            "cmd":"google-chrome e.mail.ru"
+        },
+        {
+            "pattern_rx":"((открой|открыть|запустить|запусти|запускай) |)(дион)",
+            "response_speeks":["открываю"],
+            "cmd":"google-chrome https://dion.vc/"
+        },
+        {
+            "pattern_rx":"((открой|открыть|запустить|запусти|запускай) |)(телегу|телега|телеграмм|телеграм)",
+            "response_speeks":["открываю"],
+            "cmd":"telegram-desktop"
+        },
+        {
+            "pattern_rx":"-----(открой|открыть|запустить|запусти|запускай) (заметки|заметку)",
+            "response_speeks":["открываю","вот тебе заметки"],
+            "cmd":"open \"obsidian://open?vault=work\""
+        },
+        {
+            "pattern_rx":"(открой|открыть|запустить|запусти|запускай) (питон|пайтон|python)",
+            "response_speeks":["открываю","вот тебе питон"],
+            "cmd":"konsole -e ipython"
+        },
+        {
+            "pattern_rx":"(открой|открыть|запустить|запусти|запускай) (блокнот|sublime)",
+            "response_speeks":["открываю","вот тебе блокнот"],
+            "cmd":"subl"
+        },
+        {
+            "pattern_rx":"(открой|открыть|запустить|запусти|запускай) (консоль|терминал)",
+            "response_speeks":["открываю"],
+            "cmd":"konsole"
+        }
+    ]
+}

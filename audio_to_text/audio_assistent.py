@@ -12,6 +12,12 @@ import logging
 from datetime import datetime
 from MicSpeech import MicSpeech
 from whisper.normalizers.basic import BasicTextNormalizer
+import json
+import random
+from text_to_speech import play_text_sound
+#слежение за изменением файлов:
+from watchdog.observers import Observer
+from watchdog.events import FileSystemEventHandler
 
 log_folder = 'log' #папка с логами
 
@@ -44,25 +50,28 @@ def run_process(cmd:str):
         subprocess.Popen('nohup '+ cmd + ' &', shell=True )
     except Exception as ex:
         logging.error('',exc_info=True)        
-# Путь к модели
-#с больше моделью  качества лучше но при этом идёт долгий процесс обработки что значительно увеличивает время на  ответ 
-#MODEL_PATH = 'data/vosk-model-ru-0.42'
-# поэтому используется более легковесная  модель для быстроты распознавания звука 
-MODEL_PATH = 'data/vosk-model-small-ru-0.22' 
+        
+def get_recognizer():
+    # Путь к модели
+    #с больше моделью  качества лучше но при этом идёт долгий процесс обработки что значительно увеличивает время на  ответ 
+    #MODEL_PATH = 'data/vosk-model-ru-0.42'
+    # поэтому используется более легковесная  модель для быстроты распознавания звука 
+    MODEL_PATH = 'data/vosk-model-small-ru-0.22' 
 
-# if __name__ == "__main__":
-#     #os.spawnl(os.P_DETACH, 'some_long_running_command')
-#     run_process('konsole')
-#     exit(1)
-# Проверка наличия модели
-if not os.path.exists(MODEL_PATH):
-    msg = f"Модель по пути {MODEL_PATH} не найдена. Скачайте её с https://alphacephei.com/vosk/models"
-    logging.error(msg)
-    exit(1)
+    # if __name__ == "__main__":
+    #     #os.spawnl(os.P_DETACH, 'some_long_running_command')
+    #     run_process('konsole')
+    #     exit(1)
+    # Проверка наличия модели
+    if not os.path.exists(MODEL_PATH):
+        msg = f"Модель по пути {MODEL_PATH} не найдена. Скачайте её с https://alphacephei.com/vosk/models"
+        logging.error(msg)
+        exit(1)
 
-# Инициализация модели
-model = Model(MODEL_PATH)
-recognizer = KaldiRecognizer(model, 16000)
+    # Инициализация модели
+    model = Model(MODEL_PATH)
+    recognizer = KaldiRecognizer(model, 16000)
+    return recognizer
 
 # Очередь для записи данных с микрофона
 audio_queue = queue.Queue()
@@ -92,6 +101,19 @@ my_queue_words_l = []
 is_dialog_with_llm = False
 is_command = False
 text_normalizer = BasicTextNormalizer()
+FILE_NAME_COMMAND='commands.json'
+command_list = []
+
+def inti_command_list():
+    global command_list
+    logging.info('init command')
+    with open(FILE_NAME_COMMAND,'r') as f:
+        obj = json.load(f)
+        if 'commands' in obj:
+            command_list = obj['commands']
+            logging.info(f'{len(command_list)=}')
+    
+
 
 def recognize_command(text_command):
     '''
@@ -101,11 +123,16 @@ def recognize_command(text_command):
     text_command = text_normalizer(text_command).strip()
     #print(f'{text_command=}')
     is_command = False
-    if re.match('(открой|открыть|запустить|запусти|запускай) (гугл|google)',text_command):
-        is_command = True
-        play_text_sound('открываю')
-        #os.system('google-chrome google.ru')
-        run_process('google-chrome google.ru')
+    
+    for command in command_list:
+        if re.match(command['pattern_rx'],text_command):
+            is_command = True
+            response_speek = random.choice(command['response_speeks'])
+            play_text_sound(response_speek)
+            #os.system('google-chrome google.ru')
+            run_process(command['cmd'])
+            break
+        
     m = re.match('за( |)гугл(е|и|я) (.*)',text_command)
     if m:
         is_command = True
@@ -124,76 +151,17 @@ def recognize_command(text_command):
         play_text_sound('режим диалога')
         is_dialog_with_llm = True
         is_key_pressed = False
-    
-    if re.match('((сделай|сделать) |)(скрин|скриншот)',text_command):
-        is_command = True
-        play_text_sound('режим скрина')
-        run_process('spectacle -r')
-    
-    if re.match('(включи|включить|начать|сделай|сделать) запись',text_command):
-        is_command = True
-        play_text_sound('запись началась')
-        run_process('obs --startrecording')
         
     if re.match('(закрыть|выйти из|) (диалог|диалога)',text_command):
         is_command = True
         play_text_sound('вышли из диалога')
         is_dialog_with_llm = False
-        
-    
-    if re.match('(открой|открыть|запустить|запусти|запускай) (почта|почту|ящик)',text_command):
-        is_command = True
-        play_text_sound('открываю')
-        run_process('google-chrome e.mail.ru')
-        
-    
-    if re.match('((открой|открыть|запустить|запусти|запускай) |)(дион)',text_command):
-        is_command = True
-        play_text_sound('открываю')
-        run_process('google-chrome https://dion.vc/')
-        
-    
-    if re.match('((открой|открыть|запустить|запусти|запускай) |)(телегу|телега|телеграмм|телеграм)', text_command):
-        is_command = True
-        play_text_sound('открываю')
-        run_process('telegram-desktop')
-        
-        
-    if re.match('(открой|открыть|запустить|запусти|запускай) (заметки|заметку)',text_command):
-        is_command = True
-        play_text_sound('вот тебе заметки')
-        wn = datetime.now().date().isocalendar().week
-        year = datetime.now().date().year
-        
-        run_process(f'open "obsidian://open?vault=work&file=Weekly%2F{year}%2FWeek%20{wn:02d}"')
-        
-    
-    if re.match('(открой|открыть|запустить|запусти|запускай) (питон|пайтон|python)',text_command):
-        is_command = True
-        play_text_sound('вот тебе питон')
-        run_process('konsole -e ipython')
-    
-    if re.match('(открой|открыть|запустить|запусти|запускай) (блокнот|sublime)',text_command):
-        is_command = True
-        play_text_sound('вот тебе блокнот')
-        run_process('subl')
-        
-    
-    if re.match('(открой|открыть|запустить|запусти|запускай) (консоль|терминал)',text_command):
-        is_command = True
-        play_text_sound('открываю')
-        #run_process('konsole')
-        run_process('konsole')
-        
-    
-    
+
     if text_command == 'слушай меня':
         is_command = True
         play_text_sound('говори текст я ввиду')
         is_key_pressed = True
-        
-    
-    
+
     if text_command == 'ты тут':
         is_command = True
         play_text_sound('да говори')
@@ -231,7 +199,7 @@ def recognize_and_type():
     """
     
     global last_partial_text, last_update_time, my_queue_words
-    
+    recognizer = get_recognizer()
     # Настройка микрофона
     with sd.RawInputStream(samplerate=16000, blocksize=16000, dtype="int16",
                            channels=1, callback=audio_callback):
@@ -354,13 +322,33 @@ def on_release(key):
     except Exception as e:
         logging.error(f"Ошибка в on_release: {e}",exc_info=True)
 
-import pyttsx3
-from text_to_speech import play_text_sound
+
+class FileChangeHandler(FileSystemEventHandler):
+    def __init__(self,callback):
+        self.callback = callback
+        super().__init__()
+
+    def on_modified(self, event):
+        #print(f"File '{event.src_path}' has been modified.")
+        self.callback()
+
+observer = Observer()
+def file_wather():
+    handler = FileChangeHandler(inti_command_list)
+    observer.schedule(handler, FILE_NAME_COMMAND, recursive=True)
+    observer.start()
+
+
 if __name__ == "__main__":
     #engine = pyttsx3.init()
     #rate = engine.getProperty('rate')
     #engine.setProperty('rate', 125)
-    text = "Привет, я твой голосовой помошник. Если что-то нужно обращайся"
+    texts = [
+        "Привет, я твой голосовой помошник. Если что-то нужно обращайся",
+        "Привет",
+        "Привет. Я запущен",
+        ]
+    text = random.choice(texts)
 
     play_text_sound(text)
     # Воспроизведение текста
@@ -374,6 +362,12 @@ if __name__ == "__main__":
         listener = keyboard.Listener(on_release=on_release)
         listener.start()
         
+        inti_command_list()
+        
+        file_wather()
+        
         recognize_and_type_new()
     except KeyboardInterrupt:
+        observer.stop()
         logging.info("\nПрограмма остановлена.")
+    observer.join()

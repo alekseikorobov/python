@@ -33,6 +33,7 @@ matplotlib = "^3.10.0"
 librosa = "^0.10.2.post1"
 pyannote-audio = "^3.3.2"
 transformers = "^4.48.2"
+watchdog = "^6.0.0"
 
 [tool.poetry.group.dev.dependencies]
 ipykernel = "^6.29.5"
