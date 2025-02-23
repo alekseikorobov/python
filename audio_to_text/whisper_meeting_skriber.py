@@ -1,3 +1,5 @@
+#можно улучшить если сделать как в статье
+#https://huggingface.co/learn/audio-course/ru/chapter7/transcribe-meeting
 import whisper
 import time
 from pyannote.audio import Pipeline
@@ -5,7 +7,9 @@ import torch
 from tqdm import tqdm
 import os
 import subprocess
-    
+import gc
+torch.cuda.empty_cache()
+gc.collect()
 import datetime
 from dotenv import load_dotenv
 load_dotenv()
@@ -13,14 +17,21 @@ load_dotenv()
 device = "cuda" if torch.cuda.is_available() else "cpu"
 print(device)
 
+# It can be re-enabled by calling
+#    >>> import torch
+#    >>> torch.backends.cuda.matmul.allow_tf32 = True
+#    >>> torch.backends.cudnn.allow_tf32 = True
+
 class Recognizer():
     def __init__(self,token:str):
         # import torch
         # torch.backends.cuda.matmul.allow_tf32 = True
         # torch.backends.cudnn.allow_tf32 = True
         # Загрузка модели Whisper
-        self.model_name = 'medium_s'
-        self.whisper_model = whisper.load_model("medium", device="cuda")  # Можно выбрать модель: tiny, base, small, medium, large
+        #self.model_name = 'medium_s'
+        self.model_name = 'turbo'
+        self.model = 'turbo'
+        self.whisper_model = whisper.load_model(self.model, device="cuda")  # Можно выбрать модель: tiny, base, small, medium, large
 
         
         
@@ -91,7 +102,7 @@ class Recognizer():
     
     
     def run_all(self):
-        start = time.time()        
+        start = time.time()       
         base_path_v = os.getenv('BASE_PATH_VIDEO')
         base_path_t = os.getenv('BASE_PATH_RESULT_TEXT')
         if not os.path.isdir(base_path_t):
@@ -119,8 +130,11 @@ class Recognizer():
             print(f'done - {path_v}')
             #break
             #break
-        end = (time.time() - start)*1000
-        print(f'done, {end} ms')
+        end = (time.time() - start)
+        
+        
+        
+        print(f'done, {datetime.timedelta(seconds=end)}')
 
 if __name__ == '__main__':
     # Загрузка модели для дизаризации 
