@@ -19,6 +19,11 @@ from text_to_speech import play_text_sound
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 
+import torch
+import gc
+torch.cuda.empty_cache()
+gc.collect()
+
 log_folder = 'log' #папка с логами
 
 if not os.path.isdir(log_folder):    
@@ -115,14 +120,21 @@ def inti_command_list():
     
 
 
-def recognize_command(text_command):
+def recognize_command(text_command:str):
     '''
     распознавания команд из текста 
     '''
     global is_key_pressed,is_dialog_with_llm,is_command
+    
+    is_command = False
+    
+    if text_command.strip() == ' Продолжение следует...'.strip():
+        is_command = True
+        return
     text_command = text_normalizer(text_command).strip()
     #print(f'{text_command=}')
-    is_command = False
+    
+    
     
     for command in command_list:
         if re.match(command['pattern_rx'],text_command):
