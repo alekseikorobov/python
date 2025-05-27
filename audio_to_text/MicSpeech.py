@@ -7,13 +7,15 @@ from transformers import pipeline
 
 class MicSpeech:
     
-    def __init__(self, model_name, device, language = 'russian'):
+    def __init__(self, model_name, device, language = 'russian',device_index = 7):
         # Инициализация слушителя
         self.recognizer = sr.Recognizer()
         self.recognizer.energy_threshold = 100/2  # Уменьшаем порог для лучшей чувствительности
         self.recognizer.dynamic_energy_threshold = False  # Отключаем автонастройку
         self.recognizer.pause_threshold = 0.2  # Уменьшаем паузу перед обработкой
         self.recognizer.non_speaking_duration = 0.2  # Минимальная пауза между словами
+
+        self.device_index = device_index
         
         #модель
         self.whisper = pipeline("automatic-speech-recognition",
@@ -27,7 +29,7 @@ class MicSpeech:
                                     }, device=device)
     
     def start_listening(self,callback=None):
-        with sr.Microphone() as source:
+        with sr.Microphone(self.device_index) as source:
             print("Настройка микрофона...")
             # Автоматическая настройка уровня шума
             self.recognizer.adjust_for_ambient_noise(source, duration=1)

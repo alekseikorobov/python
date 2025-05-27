@@ -189,7 +189,7 @@ def input_text_to_current_window(filtered_text:str):
 from fix_text import fix_text
 def recognize_and_type_new():
     ms = MicSpeech(model_name='openai/whisper-large-v3-turbo',#small/large/turbo
-                   device='cuda')    
+                   device='cuda',device_index=None)    
     ms.start_listening(callback_text)
     
 def callback_text(text):
