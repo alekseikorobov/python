@@ -16,21 +16,23 @@ categories = {
     'excel':'.xls,.xlsx,.csv,.xltx,.xlsm,.xlt',
     'Diagram':'.vsdx,.drawio,.eapx',
     'log':'.log',
-    'Audio':'.wav,.m4a,.mp3',
+    'Audio':'.wav,.m4a,.mp3,.ogg',
     'Videos':'.wmv,.webm,.mp4',
     'Backup':'.sgbp',
     'Link':'.lnk',    
     'Torrent':'.torrent',
-    'Zip':'.zip,.rar,.gz,.tgz,.tar.xz',
+    'Zip':'.zip,.rar,.gz,.tgz,.tar.xz,.7z',
     'Proform':'.xsn',
     'Image':'.PNG,.png,.jpg,.JPG,.svg,.jpeg,.HEIC,.heic,.ico,.bmp',
-    'Bin':'.exe,.dll,.msi,.msu,.whl,.config,.bin',
-    'Scripts':'.ipynb,.bat,.markdown,.ps1,.xml,.json,.sql,.cs,.py,.wsdl,.xsd,.dtsx,.pbix,.rdl,.vsix,.nupkg,.pac,.js,.ts,.graphql,.h',
+    'Bin':'.exe,.dll,.msi,.msu,.whl,.config,.bin,.jar',
+    'Scripts':'.ipynb,.bat,.markdown,.ps1,.xml,.json,.toml,.sql,.cs,.py,.wsdl,.xsd,.dtsx,.pbix,.rdl,.vsix,.nupkg,.pac,.js,.ts,.graphql,.h',
     'Messages':'.msg,.eml',
-    'Tracks':'.gpx,.kml,.geojson',
+    'Tracks':'.gpx,.kml,.geojson,.kmz',
     'Certificat':'.crt,.cer,.pem',
+    'DATA':'.parquet',
     'Other':'',#not change name!
 }
+skip_ext = '.dtmp,.rdp,.kdbx,.ini'
 
 base_dirs = [
     '/home/aleksei/Downloads',
@@ -63,19 +65,27 @@ def move_file(base_dir,file_name,key):
     logger.info(f'move {file_path} -> {file_new_path}')
     os.rename(file_path,file_new_path)
 
+def sort_file_by_exts(files,ext_str,reverse=False):
+    exts = ext_str.split(',')
+    #print(f'vals - {tuple(exts)}')
+    if not reverse:
+        return [ file for file in files if file.lower().endswith( tuple(exts) ) ]
+    else:
+        return [ file for file in files if not file.lower().endswith( tuple(exts) ) ]
 
 def sort_by_cat(base_dir,key):
     val = categories[key]
     logger.debug(f'{key} - {val}')
     full_dir = os.path.join(base_dir,key)
-    vals = val.split(',')
-    logger.debug(f'vals - {tuple(vals)}')
     files = os.listdir(base_dir)
 
     logger.debug(f'all files - {len(files)}')
 
+    files = sort_file_by_exts(files, skip_ext, reverse=True)
+    logger.debug(f'after ignore - {len(files)}')
+    
     if not 'Other' == key:        
-        files = [ file for file in files if file.lower().endswith( tuple(vals) ) ]
+        files = sort_file_by_exts(files, val)
     else:
         files = [ file for file in files if os.path.isfile(os.path.join(base_dir,file)) ]
 
