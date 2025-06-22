@@ -31,13 +31,21 @@ class Recognizer():
         #self.model_name = 'medium_s'
         self.model_name = 'turbo'
         self.model = 'turbo'
-        self.whisper_model = whisper.load_model(self.model, device="cuda")  # Можно выбрать модель: tiny, base, small, medium, large
-
-        
+        self.whisper_model = whisper.load_model(self.model, device="cuda")  # Можно выбрать модель: tiny, base, small, medium, large        
         
         self.diarization_pipeline = Pipeline.from_pretrained("pyannote/speaker-diarization",use_auth_token=token)
 
-        self.diarization_pipeline = self.diarization_pipeline.to(torch.device('cuda'))        
+        self.diarization_pipeline = self.diarization_pipeline.to(torch.device('cuda'))
+        
+        self.base_path_v = os.getenv('BASE_PATH_VIDEO')
+        if self.base_path_v is None:
+            raise(Exception(f'not set param - BASE_PATH_VIDEO'))
+        
+        self.base_path_t = os.getenv('BASE_PATH_RESULT_TEXT')
+        if self.base_path_t is None:
+            raise(Exception(f'not set param - BASE_PATH_RESULT_TEXT'))
+        self.use_ext = ['.mkv','.mp3']
+        self.result_ext = 'md' #расширение в который нужно записать выходной текст
 
     def convert_seconds_to_hms(self,seconds):
         total_time = datetime.timedelta(seconds=seconds)
@@ -101,33 +109,39 @@ class Recognizer():
         return file_result
     
     
+    def run_one(self, path_v):
+        _,file_name = os.path.split(path_v)
+        file_name_b,ext = os.path.splitext(file_name)
+        if not ext in self.use_ext:
+            raise(Exception(f'not support ext - {ext}, use: {self.use_ext}'))
+        path_out = os.path.join(self.base_path_t, file_name.replace(ext,f'_{self.model_name}.{self.result_ext}'))
+
+        # if os.path.isfile(path_out):
+        #   os.remove(path_out)
+        
+        if not os.path.isfile(path_out):
+            path_wav = self.get_audio_file(path_v)
+            res = self.transcribe_with_speaker_diarization(path_wav)
+            with open(path_out,'w',encoding='UTF-8') as f:
+                f.write(res)
+        print(f'done - {path_v}')
+    
     def run_all(self):
         start = time.time()       
-        base_path_v = os.getenv('BASE_PATH_VIDEO')
-        base_path_t = os.getenv('BASE_PATH_RESULT_TEXT')
-        if not os.path.isdir(base_path_t):
-            os.mkdir(base_path_t)
-        use_ext = ['.mkv','.mp3']
-        for file_name in tqdm(os.listdir(base_path_v),colour='green'):    
+        
+        if not os.path.isdir(self.base_path_t):
+            os.mkdir(self.base_path_t)
+        
+        for file_name in tqdm(os.listdir(self.base_path_v),colour='green'):    
             file_name_b,ext = os.path.splitext(file_name)
-            if not ext in use_ext:
+            if not ext in self.use_ext:
                 continue
             # if file_name != '2024-09-03_17-02-22.mkv':
             #   continue
             
-            path_v = os.path.join(base_path_v, file_name)
+            path_v = os.path.join(self.base_path_v, file_name)
             
-            path_out = os.path.join(base_path_t, file_name.replace(ext,f'_{self.model_name}.txt'))
-
-            # if os.path.isfile(path_out):
-            #   os.remove(path_out)
-            
-            if not os.path.isfile(path_out):
-                path_wav = self.get_audio_file(path_v)
-                res = self.transcribe_with_speaker_diarization(path_wav)
-                with open(path_out,'w',encoding='UTF-8') as f:
-                    f.write(res)
-            print(f'done - {path_v}')
+            self.run_one(path_v)            
             #break
             #break
         end = (time.time() - start)
@@ -140,4 +154,5 @@ if __name__ == '__main__':
     # Загрузка модели для дизаризации 
     r = Recognizer(os.getenv('TOKEN_HF'))
     r.run_all()
+    
     

@@ -48,16 +48,16 @@ base_dirs = [
     #r'c:\Users\akorobov\Documents\Other'
 ]
 
-def move_file(base_dir,file_name,key):
+def move_file(base_dir,file_name,key)->int:
     file_path = os.path.join(base_dir,file_name)
 
     if not os.path.exists(file_path):        
         logger.warning(f'file not exists {file_path}')
-        return
+        return 0
     file_new_path = os.path.join(base_dir,key,file_name)
     if len(file_new_path) > 255:
         logger.warning(f'file {file_name} is very long')
-        return
+        return 0
 
     #logger.debug(f'file new path {file_new_path}')
     index = 1
@@ -69,6 +69,7 @@ def move_file(base_dir,file_name,key):
         index += 1
     logger.info(f'move {file_path} -> {file_new_path}')
     os.rename(file_path,file_new_path)
+    return 1
 
 def sort_file_by_exts(files,ext_str,reverse=False):
     exts = ext_str.split(',')
@@ -78,11 +79,12 @@ def sort_file_by_exts(files,ext_str,reverse=False):
     else:
         return [ file for file in files if not file.lower().endswith( tuple(exts) ) ]
 
-def sort_by_cat(base_dir,key):
+def sort_by_cat(base_dir,key)->int:
     val = categories[key]
     logger.debug(f'{key} - {val}')
     full_dir = os.path.join(base_dir,key)
     files = os.listdir(base_dir)
+    result_moving_count = 0
 
     logger.debug(f'all files - {len(files)}')
 
@@ -100,12 +102,20 @@ def sort_by_cat(base_dir,key):
             logger.debug(f'create dir - {full_dir}')
             os.mkdir(full_dir)
         for v in files:        
-            move_file(base_dir,v,key)
+            result_moving_count += move_file(base_dir,v,key)
+    
+    return result_moving_count
 
 if __name__ == '__main__':
+    
     logger.info('start sorting')
+    result_moving_count_all = 0
     for base_dir in base_dirs:
         logger.debug(f'base_dir - {base_dir}')
         for cat in categories:
-            sort_by_cat(base_dir,cat)
+            result_moving_count_all += sort_by_cat(base_dir,cat)
             logger.debug(cat)
+    import time
+    from notify import notification
+    time.sleep(10)
+    notification('sorting file', message=f'{result_moving_count_all=}', app_name='sorting file',timeout = 10000)
