@@ -5,6 +5,7 @@
 
 from loguru import logger
 import os
+import hashlib
 
 if not os.path.isfile("log/sort_by_ex.log"):
     raise(Exception('not file path'))
@@ -23,7 +24,7 @@ categories = {
     'Backup': '.sgbp,.bak,.backup,.gho,.tib,.v2i,.iso,.vhd,.vhdx,.vmdk',
     #'Link': '.lnk,.url,.webloc',
     'Torrent': '.torrent',
-    'Zip': '.zip,.rar,.gz,.tgz,.tar.xz,.7z,.bz2,.xz,.lz,.lzma,.z,.tar,.cab,.dmg,.pkg,.rpm,.deb,.arj,.zst',
+    'Zip': '.zip,.rar,.gz,.tgz,.tar.xz,.7z,.bz2,.xz,.lz,.lzma,.z,.tar,.cab,.dmg,.pkg,.rpm,.arj,.zst',
     'Proform': '.xsn',
     'image': '.png,.jpg,.svg,.jpeg,.heic,.ico,.bmp,.tiff,.tif,.webp,.raw,.nef,.cr2,.arw,.eps,.ai,.psd,.xcf,.gif,.apng,.avif,.jp2,.jxl',
     'Bin': '.exe,.dll,.msi,.msu,.whl,.config,.bin,.jar,.class,.apk,.ipa,.so,.lib,.a,.ko,.rpm,.deb,.com,.scr,.pyd,.pyc,.ocx,.cab,.sys,.drv,.dat',
@@ -38,6 +39,7 @@ categories = {
     'Other': '',  # not change name!
 }
 skip_ext = '.dtmp,.rdp,.kdbx,.ini,.lnk,.desktop'
+DELETE_DUPLICATE = True # если перемещаем файл, а в папке уже есть такой файл, тогда удаляем файл без перемещения
 
 base_dirs = [
     '/home/aleksei/Downloads',
@@ -48,6 +50,35 @@ base_dirs = [
     #r'c:\Users\akorobov\Documents\Other'
 ]
 
+def check_duplicate_file(file_path, file_new_path):
+    #batch_size = 4096
+    batch_size = None
+    try:
+        # Открываем первый файл в бинарном режиме и считываем блоками
+        with open(file_path, 'rb') as f1:
+            hash1 = hashlib.md5()
+            for chunk in iter(lambda: f1.read(batch_size), b''):
+                hash1.update(chunk)
+        
+        # Открываем второй файл в бинарном режиме и считываем блоками
+        with open(file_new_path, 'rb') as f2:
+            hash2 = hashlib.md5()
+            for chunk in iter(lambda: f2.read(batch_size), b''):
+                hash2.update(chunk)
+        
+        # Сравниваем хеши
+        return hash1.hexdigest() == hash2.hexdigest()
+    
+    except FileNotFoundError:
+        logger.error(f"Ошибка: Один из файлов не найден ({file_path} или {file_new_path})")
+        return False
+    
+    except Exception as e:
+        logger.error(f"Произошла ошибка при проверке файлов: {str(e)}")
+        return False
+
+    
+    
 def move_file(base_dir,file_name,key)->int:
     file_path = os.path.join(base_dir,file_name)
 
@@ -63,6 +94,12 @@ def move_file(base_dir,file_name,key)->int:
     index = 1
     while os.path.exists(file_new_path):
         logger.debug(f'file exists {file_new_path}')
+        if DELETE_DUPLICATE:
+            is_duplicate = check_duplicate_file(file_path, file_new_path)
+            if is_duplicate:
+                logger.info(f'remove {file_path}')
+                os.remove(file_path)
+                return 0
         filename, file_extension = os.path.splitext(file_name)
         file_name_new = f'{filename} ({index}){file_extension}'
         file_new_path = os.path.join(base_dir,key,file_name_new)
