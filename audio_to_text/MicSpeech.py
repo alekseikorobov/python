@@ -4,6 +4,8 @@ import speech_recognition as sr
 import warnings
 warnings.filterwarnings("ignore")
 from transformers import pipeline
+import numpy as np
+import whisperx
 
 class MicSpeech:
     
@@ -14,19 +16,24 @@ class MicSpeech:
         self.recognizer.dynamic_energy_threshold = False  # Отключаем автонастройку
         self.recognizer.pause_threshold = 0.2  # Уменьшаем паузу перед обработкой
         self.recognizer.non_speaking_duration = 0.2  # Минимальная пауза между словами
-
+        self.batch_size = 5
         self.device_index = device_index
+        self.version = 'v1' #use v1=whisperx, v2=whisperx
         
         #модель
-        self.whisper = pipeline("automatic-speech-recognition",
-                                model= model_name, 
-                   generate_kwargs={"task": "transcribe",
-                                    'language':language,
-                                    # 'suppress_tokens':"",
-                                    # 'beam_size':5,
-                                    # 'vad_filter':True,
-                                    # 'vad_parameters':dict(min_silence_duration_ms=1000)
-                                    }, device=device)
+        if self.version == 'v1':
+            self.whisper = pipeline("automatic-speech-recognition",
+                                    model= model_name, 
+                       generate_kwargs={"task": "transcribe",
+                                        'language':language,
+                                        # 'suppress_tokens':"",
+                                        # 'beam_size':5,
+                                        # 'vad_filter':True,
+                                        # 'vad_parameters':dict(min_silence_duration_ms=1000)
+                                        }, device=device)
+        else:
+            compute_type = "float16" # change to "int8" if low on GPU mem (may reduce accuracy)
+            self.whisper = whisperx.load_model("large-v2", device, compute_type=compute_type)
     
     def start_listening(self,callback=None):
         with sr.Microphone(self.device_index) as source:
@@ -59,11 +66,30 @@ class MicSpeech:
                         # Попытка распознать речь с помощью Google Web Speech API
                         #text = recognizer.recognize_google(audio, language="ru-RU")
                     #print(f"Вы сказали: {type(audio)=}")
-                    data = audio.get_wav_data(convert_rate=16000)
-                    result = self.whisper(data)
-                    if callback is not None:
-                        #print("Распознанный текст:", result["text"])
-                        callback(result["text"])
+                    
+                    if self.version == 'v1':
+                        data = audio.get_wav_data(convert_rate=16000)
+                        result = self.whisper(data)
+                        if callback is not None:
+                            #print("Распознанный текст:", result["text"])
+                            callback(result["text"])
+                    else:
+                        # Преобразование AudioData в numpy.ndarray
+                        #audio_bytes = audio.get_raw_data()  # Получаем сырые байты
+                        #audio_array = np.frombuffer(audio_bytes, dtype=np.float32)  # Преобразуем в массив int16
+
+                        # Если нужно нормализовать в диапазон [-1.0, 1.0]
+                        #audio_array_normalized = audio_array.astype(np.float32) / 32768.0  # Для 16-битного звука
+                        data = audio.get_wav_data(convert_rate=16000)
+                        result = self.whisper.model.model(data)
+                        print(result)
+
+                        # result = self.whisper.transcribe(audio_array, batch_size=self.batch_size)
+                        print(result) # before alignment
+                        # if callback is not None:
+                        #     #print("Распознанный текст:", result["text"])
+                        #     callback(result["segments"])
+
                 except sr.UnknownValueError:
                     # Если речь не распознана
                     raise(Exception("Речь не распознана. Пожалуйста, повторите."))
