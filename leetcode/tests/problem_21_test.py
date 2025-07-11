@@ -1,6 +1,6 @@
 #import inc_dec    # The code to test
 import unittest   # The test framework
-from codes.problem_21 import Solution
+from codes.problem_21_merge_two_sorted_lists import Solution
 
 
 class Test_TestIncrementDecrement(unittest.TestCase):

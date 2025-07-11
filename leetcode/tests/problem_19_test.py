@@ -1,6 +1,6 @@
 #import inc_dec    # The code to test
 import unittest   # The test framework
-from codes.problem_19 import Solution
+from codes.problem_19_remove_nth_node_from_end_of_list import Solution
 
 
 class Test_TestIncrementDecrement(unittest.TestCase):

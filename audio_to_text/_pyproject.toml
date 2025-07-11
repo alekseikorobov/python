@@ -1,0 +1,45 @@
+[tool.poetry]
+name = "audio-to-text"
+version = "0.1.0"
+description = ""
+authors = ["alekseikorobov <aleksei_korobov@mail.ru>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+tqdm = "^4.66.5"
+wave = "^0.0.2"
+#torch==2.3.1
+whisper = "^1.1.10"
+vosk = "^0.3.45"
+sounddevice = "^0.5.1"
+numpy = "1.26.2"
+pyautogui = "^0.9.54"
+keyboard = "^0.13.5"
+speechrecognition = "^3.14.0"
+pynput = "^1.7.7"
+pyttsx3 = "^2.98"
+torchaudio = "^2.5.1"
+omegaconf = "^2.3.0"
+langchain-community = "^0.3.15"
+langchain-ollama = "^0.2.2"
+langchain = "^0.3.15"
+langsmith = "^0.3.0"
+chromadb = "^0.6.3"
+pypdf = "^5.1.0"
+python-dotenv = "^1.0.1"
+pydub = "^0.25.1"
+matplotlib = "^3.10.0"
+librosa = "^0.10.2.post1"
+pyannote-audio = "^3.3.2"
+transformers = {extras = ["torch"], version = "^4.48.2"}
+watchdog = "^6.0.0"
+evaluate = "^0.4.3"
+jiwer = "^3.1.0"
+
+[tool.poetry.group.dev.dependencies]
+ipykernel = "^6.29.5"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
