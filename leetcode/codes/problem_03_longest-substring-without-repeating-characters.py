@@ -68,3 +68,18 @@ class Solution:
                 max_str = curr_str
 
         return len(max_str)
+    
+##2025-07-11
+class Solution(object):
+    def lengthOfLongestSubstring(self, s):
+        max_length = 0
+        N = len(s)
+        for i in range(N):
+            result = s[i]
+            j = i + 1
+            while j < N and s[j] not in result:
+                result += s[j]
+                j+=1
+            if len(result) > max_length:
+                max_length = len(result) 
+        return max_length
