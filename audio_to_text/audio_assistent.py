@@ -18,6 +18,7 @@ from text_to_speech import play_text_sound
 #слежение за изменением файлов:
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
+from deprecation import deprecated
 
 import torch
 import gc
@@ -204,10 +205,11 @@ def callback_text(text):
     if is_key_pressed:
         input_text_to_current_window(text)
 
+@deprecated("этот метод устаревший его больше не использовать. Вместо него используется recognize_and_type_new")
 def recognize_and_type():
     """Распознавание речи
        используется для распознавания команд
-       в случае если указан флаг вода текста тогда отправляется текстов активное окно       
+       в случае если указан флаг вода текста тогда отправляется текстов активное окно
     """
     
     global last_partial_text, last_update_time, my_queue_words

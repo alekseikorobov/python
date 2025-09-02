@@ -1,3 +1,6 @@
+##
+##uv run --directory /media/aleksei/home/MyProject/python/audio_to_text/ whisper_meeting_skriber.py
+##
 #можно улучшить если сделать как в статье
 #https://huggingface.co/learn/audio-course/ru/chapter7/transcribe-meeting
 import whisper
