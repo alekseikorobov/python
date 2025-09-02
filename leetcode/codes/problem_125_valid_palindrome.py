@@ -46,3 +46,21 @@ result = s.isPalindrome(".,")
 print(result)
 
 #O(N)
+
+#2025-07-11
+class Solution:
+    def isPalindrome(self, s: str) -> bool:
+        s = s.lower()
+        a = 0
+        b = len(s)-1
+        while a < b:
+            while a < b and (not s[a].isnumeric() and not s[a].isalpha()):
+                a += 1
+            while a < b and (not s[b].isnumeric() and not s[b].isalpha()):
+                b -= 1
+            
+            if s[a] != s[b]:
+                return False
+            a += 1
+            b -= 1
+        return True
