@@ -24,3 +24,22 @@ class Solution:
 s = Solution()
 res = s.search([-1,0,3,5,9,12],13)
 print(res)
+
+
+
+#%%
+def bin_search(a:list,t:int):    
+    l,r = 0,len(a)
+    while l < r:
+        m = ((r-l) // 2) + l
+        if a[m] == t:
+            return m
+        if a[m] > t:
+            r = m
+        if a[m] < t:
+            l = m
+    return -1
+    
+bin_search([1], 1)
+
+#bin(list(range(0,1000)),90)

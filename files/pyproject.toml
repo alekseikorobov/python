@@ -5,13 +5,17 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
+    "beautifulsoup4>=4.13.5",
+    "clipboard>=0.0.4",
     "dotenv>=0.9.9",
     "loguru>=0.7.3",
     "matplotlib>=3.10.5",
     "notify-send>=1.1.2",
     "pandas>=2.2.3",
+    "pytubefix>=9.5.1",
     "requests>=2.32.5",
     "seaborn>=0.13.2",
+    "selenium>=4.35.0",
     "tqdm>=4.67.1",
 ]
 

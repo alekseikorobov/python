@@ -7,7 +7,7 @@ class ListNode:
         self.val = val
         self.next = next
 
-def build_nodes(list:List) -> ListNode:
+def build_nodes(list:List) -> ListNode|None:
     if len(list) == 0:
         return None
     node = ListNode(list[0], None)
@@ -25,3 +25,7 @@ def toArray(ns:ListNode):
         res.append(el.val)
         el = el.next
     return res
+
+def sum_arithmetic_progression_formula(a1, d, n):
+    if n <= 0: return 0
+    return (n / 2) * (2 * a1 + (n - 1) * d)

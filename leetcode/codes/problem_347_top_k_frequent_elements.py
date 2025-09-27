@@ -1,4 +1,5 @@
 import heapq
+from typing import List
 from collections import defaultdict
 class Solution:
     def topKFrequent(self, nums: List[int], k: int) -> List[int]:
@@ -11,7 +12,7 @@ class Solution:
 
         result_index = []
         for count in count_element.values():
-            heapq.heappush(result_index,count)
+            heapq.heappush(result_index, count)
 
             if len(result_index)>k:
                 heapq.heappop(result_index)
@@ -22,4 +23,4 @@ class Solution:
             for k,v in count_element.items():
                 if v == index and k not in result:
                     result.append(k)
-        return result
+        return result    

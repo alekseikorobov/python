@@ -44,6 +44,10 @@ class Recognizer():
         if self.base_path_v is None:
             raise(Exception(f'not set param - BASE_PATH_VIDEO'))
         
+        self.base_path_wav = os.getenv('BASE_PATH_WAV')
+        if self.base_path_wav is None:
+            raise(Exception(f'not set param - BASE_PATH_WAV'))
+        
         self.base_path_t = os.getenv('BASE_PATH_RESULT_TEXT')
         if self.base_path_t is None:
             raise(Exception(f'not set param - BASE_PATH_RESULT_TEXT'))
@@ -99,10 +103,11 @@ class Recognizer():
     # Пример использования
     
     def get_audio_file(self, from_file):
-        base_path, ext = os.path.splitext(from_file)
+        folder,file_name = os.path.split(from_file)
+        base_name, ext = os.path.splitext(file_name)
         if ext.lower() == '.mp3':
             return from_file
-        file_result = f"{base_path}.wav"
+        file_result = os.path.join(self.base_path_wav,f"{base_name}.wav")
         if os.path.isfile(file_result):
             return file_result
         
